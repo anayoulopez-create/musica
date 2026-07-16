@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Música</title>
+<style>
+  :root {
+    --bg: #1c1c1e;
+    --surface: #242426;
+    --surface2: #2c2c2e;
+    --border: #3a3a3c;
+    --text: #f2f2f2;
+    --text-secondary: #9a9a9e;
+    --accent: #0a84ff;
+    --green: #30d158;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "SF Pro Text", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 24px 12px 120px;
+  }
+  .app {
+    width: 100%;
+    max-width: 480px;
+  }
+  .connect-screen {
+    text-align: center;
+    padding-top: 120px;
+  }
+  .connect-screen h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .connect-screen p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+  button.primary {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.primary:hover { opacity: 0.9; }
+  .hidden { display: none !important; }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .breadcrumb span.crumb {
+    cursor: pointer;
+  }
+  .breadcrumb span.crumb:hover { color: var(--text); }
+  .breadcrumb span.sep { opacity: 0.5; }
+  h2.title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 4px 0 18px;
+  }
+
+  .folder-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 26px;
+  }
+  .folder-card {
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .folder-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+  }
+  .folder-card:active { transform: translateY(0); }
+  .folder-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .folder-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+  .folder-info { min-width: 0; flex: 1; }
+  .folder-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .folder-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  .section-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 18px 0 6px;
+  }
+
+  .track-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+  .track-row:hover { background: var(--surface); }
+  .track-row.active { background: rgba(10,132,255,0.15); }
+  .track-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    font-size: 15px;
+  }
+  .track-row.active .track-icon { background: var(--accent); }
+  .track-info { flex: 1; min-width: 0; }
+  .track-name {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .track-row.active .track-name { color: var(--accent); font-weight: 600; }
+  .track-sub { font-size: 12px; color: var(--text-secondary); }
+
+  .empty-msg {
+    color: var(--text-secondary);
+    font-size: 13px;
+    padding: 20px 8px;
+    text-align: center;
+  }
+
+  .player-bar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 10px 16px 16px;
+  }
+  .player-inner { max-width: 480px; margin: 0 auto; }
+  .now-playing {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .now-playing b { color: var(--text); font-weight: 500; }
+
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .progress-row span { font-size: 11px; color: var(--text-secondary); min-width: 30px; }
+  .progress-track {
+    flex: 1;
+    height: 3px;
+    background: var(--border);
+    border-radius: 100px;
+    position: relative;
+    cursor: pointer;
+  }
+  .progress-fill {
+    position: absolute;
+    left: 0; top: 0; height: 100%;
+    background: var(--accent);
+    border-radius: 100px;
+    width: 0%;
+  }
+
+  .controls-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .ctrl-btn {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .ctrl-btn.small { font-size: 18px; color: var(--text-secondary); }
+  .ctrl-btn.small.on { color: var(--accent); }
+  .play-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .volume-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+  }
+  input[type=range] {
+    -webkit-appearance: none;
+    flex: 1;
+    height: 3px;
+    border-radius: 100px;
+    background: var(--border);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--text);
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div id="connectScreen" class="connect-screen">
+    <h1>Música</h1>
+    <p>Conecta con tu cuenta de Google para acceder a tu carpeta de música en Drive.</p>
+    <button class="primary" id="connectBtn">Conectar con Google</button>
+  </div>
+
+  <div id="mainScreen" class="hidden">
+    <div class="breadcrumb" id="breadcrumb"></div>
+    <h2 class="title" id="currentTitle">Música</h2>
+
+    <div class="section-label" id="foldersLabel">Carpetas</div>
+    <div class="folder-grid" id="folderGrid"></div>
+
+    <div class="section-label">Canciones</div>
+    <div id="trackList"></div>
+  </div>
+
+</div>
+
+<div class="player-bar hidden" id="playerBar">
+  <div class="player-inner">
+    <div class="now-playing" id="nowPlaying">Nada sonando</div>
+    <div class="progress-row">
+      <span id="curTime">0:00</span>
+      <div class="progress-track" id="progressTrack">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <span id="durTime">0:00</span>
+    </div>
+    <div class="controls-row">
+      <button class="ctrl-btn small" id="repeatBtn" title="Repetir">&#8635;</button>
+      <button class="ctrl-btn" id="prevBtn">&#9198;</button>
+      <div class="play-btn" id="playBtn">&#9654;</div>
+      <button class="ctrl-btn" id="nextBtn">&#9197;</button>
+      <div class="volume-row">
+        <span class="ctrl-btn small" style="cursor:default;">&#128266;</span>
+        <input type="range" id="volumeSlider" min="0" max="100" value="70">
+      </div>
+    </div>
+  </div>
+</div>
+
+<audio id="audioEl"></audio>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+/* ============ CONFIGURACIÓN ============ */
+const CLIENT_ID = '276807599972-6etcoe47dtod0kmrlisjoq9898h24an9.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
+const NOMBRE_CARPETA_RAIZ = 'Música'; // nombre de la carpeta principal en tu Drive
+/* ======================================== */
+
+let accessToken = null;
+let tokenClient = null;
+let currentFolderId = 'root';
+let breadcrumbStack = [{ id: 'root', name: 'Mi unidad' }];
+let currentTracks = [];
+let currentTrackIndex = -1;
+let currentObjectUrl = null;
+let repeatOn = false;
+
+const audioEl = document.getElementById('audioEl');
+const playerBar = document.getElementById('playerBar');
+const nowPlaying = document.getElementById('nowPlaying');
+const playBtn = document.getElementById('playBtn');
+const progressFill = document.getElementById('progressFill');
+const progressTrack = document.getElementById('progressTrack');
+const curTimeEl = document.getElementById('curTime');
+const durTimeEl = document.getElementById('durTime');
+const volumeSlider = document.getElementById('volumeSlider');
+const repeatBtn = document.getElementById('repeatBtn');
+
+audioEl.volume = 0.7;
+
+window.onload = () => {
+  const check = setInterval(() => {
+    if (window.google && google.accounts) {
+      clearInterval(check);
+      initGoogle();
+    }
+  }, 100);
+};
+
+function initGoogle() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: (resp) => {
+      if (resp.error) {
+        alert('No se pudo conectar: ' + resp.error);
+        return;
+      }
+      accessToken = resp.access_token;
+      document.getElementById('connectScreen').classList.add('hidden');
+      document.getElementById('mainScreen').classList.remove('hidden');
+      entrarEnCarpetaRaiz();
+    }
+  });
+  document.getElementById('connectBtn').onclick = () => {
+    tokenClient.requestAccessToken();
+  };
+}
+
+async function driveFetch(url) {
+  const res = await fetch(url, {
+    headers: { Authorization: 'Bearer ' + accessToken }
+  });
+  if (!res.ok) throw new Error('Error de Drive API: ' + res.status);
+  return res.json();
+}
+
+async function entrarEnCarpetaRaiz() {
+  // buscamos la carpeta "Música" dentro de la raíz de Drive
+  const q = encodeURIComponent(`name = '${NOMBRE_CARPETA_RAIZ}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false and 'root' in parents`);
+  const data = await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`);
+  if (data.files && data.files.length > 0) {
+    breadcrumbStack = [{ id: data.files[0].id, name: data.files[0].name }];
+    currentFolderId = data.files[0].id;
+  } else {
+    breadcrumbStack = [{ id: 'root', name: 'Mi unidad' }];
+    currentFolderId = 'root';
+  }
+  renderBreadcrumb();
+  cargarCarpeta(currentFolderId);
+}
+
+function renderBreadcrumb() {
+  const el = document.getElementById('breadcrumb');
+  el.innerHTML = '';
+  breadcrumbStack.forEach((item, i) => {
+    const span = document.createElement('span');
+    span.className = 'crumb';
+    span.textContent = item.name;
+    span.onclick = () => {
+      breadcrumbStack = breadcrumbStack.slice(0, i + 1);
+      currentFolderId = item.id;
+      renderBreadcrumb();
+      cargarCarpeta(currentFolderId);
+    };
+    el.appendChild(span);
+    if (i < breadcrumbStack.length - 1) {
+      const sep = document.createElement('span');
+      sep.className = 'sep';
+      sep.textContent = '›';
+      el.appendChild(sep);
+    }
+  });
+  document.getElementById('currentTitle').textContent = breadcrumbStack[breadcrumbStack.length - 1].name;
+}
+
+async function cargarCarpeta(folderId) {
+  const q = encodeURIComponent(`'${folderId}' in parents and trashed = false`);
+  const data = await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=folder,name&pageSize=200&fields=files(id,name,mimeType)`);
+  const files = data.files || [];
+
+  const folders = files.filter(f => f.mimeType === 'application/vnd.google-apps.folder');
+  const tracks = files.filter(f => f.mimeType && f.mimeType.startsWith('audio/'));
+
+  const folderGrid = document.getElementById('folderGrid');
+  const foldersLabel = document.getElementById('foldersLabel');
+  folderGrid.innerHTML = '';
+  if (folders.length === 0) {
+    foldersLabel.classList.add('hidden');
+  } else {
+    foldersLabel.classList.remove('hidden');
+    folders.forEach(folder => {
+      const card = document.createElement('div');
+      card.className = 'folder-card';
+      const color = colorParaCarpeta(folder.name);
+      card.innerHTML = `
+        <div class="folder-icon" style="background:${color}">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 6.5C3 5.67 3.67 5 4.5 5H9.17C9.5 5 9.82 5.13 10.05 5.36L11.5 6.8C11.73 7.03 12.05 7.16 12.38 7.16H19.5C20.33 7.16 21 7.83 21 8.66V17.5C21 18.33 20.33 19 19.5 19H4.5C3.67 19 3 18.33 3 17.5V6.5Z" fill="white"/>
+          </svg>
+        </div>
+        <div class="folder-info">
+          <div class="folder-name">${escapeHtml(folder.name)}</div>
+          <div class="folder-sub">Carpeta</div>
+        </div>`;
+      card.onclick = () => {
+        breadcrumbStack.push({ id: folder.id, name: folder.name });
+        currentFolderId = folder.id;
+        renderBreadcrumb();
+        cargarCarpeta(folder.id);
+      };
+      folderGrid.appendChild(card);
+    });
+  }
+
+  currentTracks = tracks;
+  const trackList = document.getElementById('trackList');
+  trackList.innerHTML = '';
+  if (tracks.length === 0) {
+    trackList.innerHTML = '<div class="empty-msg">No hay canciones en esta carpeta.</div>';
+  } else {
+    tracks.forEach((track, idx) => {
+      const row = document.createElement('div');
+      row.className = 'track-row';
+      row.id = 'track-' + idx;
+      row.innerHTML = `
+        <div class="track-icon">&#9654;</div>
+        <div class="track-info">
+          <div class="track-name">${escapeHtml(track.name)}</div>
+          <div class="track-sub">streaming</div>
+        </div>`;
+      row.onclick = () => reproducirIndice(idx);
+      trackList.appendChild(row);
+    });
+  }
+}
+
+const PALETA_CARPETAS = ['#0a84ff', '#30d158', '#ff9f0a', '#ff375f', '#bf5af2', '#64d2ff', '#ffd60a'];
+function colorParaCarpeta(nombre) {
+  let hash = 0;
+  for (let i = 0; i < nombre.length; i++) {
+    hash = nombre.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return PALETA_CARPETAS[Math.abs(hash) % PALETA_CARPETAS.length];
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+async function reproducirIndice(idx) {
+  if (idx < 0 || idx >= currentTracks.length) return;
+  currentTrackIndex = idx;
+  const track = currentTracks[idx];
+
+  document.querySelectorAll('.track-row').forEach(r => r.classList.remove('active'));
+  const activeRow = document.getElementById('track-' + idx);
+  if (activeRow) activeRow.classList.add('active');
+
+  nowPlaying.innerHTML = 'Cargando… <b>' + escapeHtml(track.name) + '</b>';
+  playerBar.classList.remove('hidden');
+
+  if (currentObjectUrl) {
+    URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = null;
+  }
+
+  try {
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${track.id}?alt=media`, {
+      headers: { Authorization: 'Bearer ' + accessToken }
+    });
+    if (!res.ok) throw new Error('No se pudo cargar el archivo');
+    const blob = await res.blob();
+    currentObjectUrl = URL.createObjectURL(blob);
+    audioEl.src = currentObjectUrl;
+    audioEl.play();
+    nowPlaying.innerHTML = 'Sonando ahora · <b>' + escapeHtml(track.name) + '</b>';
+  } catch (e) {
+    nowPlaying.textContent = 'Error al reproducir: ' + e.message;
+  }
+}
+
+audioEl.addEventListener('play', () => { playBtn.innerHTML = '&#10074;&#10074;'; });
+audioEl.addEventListener('pause', () => { playBtn.innerHTML = '&#9654;'; });
+
+audioEl.addEventListener('timeupdate', () => {
+  if (audioEl.duration) {
+    const pct = (audioEl.currentTime / audioEl.duration) * 100;
+    progressFill.style.width = pct + '%';
+    curTimeEl.textContent = formatTime(audioEl.currentTime);
+    durTimeEl.textContent = formatTime(audioEl.duration);
+  }
+});
+
+audioEl.addEventListener('ended', () => {
+  if (repeatOn) {
+    audioEl.currentTime = 0;
+    audioEl.play();
+  } else {
+    siguienteCancion();
+  }
+});
+
+function formatTime(s) {
+  if (isNaN(s)) return '0:00';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60).toString().padStart(2, '0');
+  return m + ':' + sec;
+}
+
+playBtn.onclick = () => {
+  if (!audioEl.src) return;
+  if (audioEl.paused) audioEl.play(); else audioEl.pause();
+};
+
+document.getElementById('prevBtn').onclick = () => {
+  if (currentTrackIndex > 0) reproducirIndice(currentTrackIndex - 1);
+};
+document.getElementById('nextBtn').onclick = siguienteCancion;
+function siguienteCancion() {
+  if (currentTrackIndex < currentTracks.length - 1) {
+    reproducirIndice(currentTrackIndex + 1);
+  }
+}
+
+repeatBtn.onclick = () => {
+  repeatOn = !repeatOn;
+  repeatBtn.classList.toggle('on', repeatOn);
+};
+
+volumeSlider.oninput = () => {
+  audioEl.volume = volumeSlider.value / 100;
+};
+
+progressTrack.onclick = (e) => {
+  if (!audioEl.duration) return;
+  const rect = progressTrack.getBoundingClientRect();
+  const pct = (e.clientX - rect.left) / rect.width;
+  audioEl.currentTime = pct * audioEl.duration;
+};
+</script>
+
+</body>
+</html>
