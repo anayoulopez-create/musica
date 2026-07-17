@@ -392,10 +392,6 @@
       <button class="ctrl-btn" id="prevBtn">&#9198;</button>
       <div class="play-btn" id="playBtn">&#9654;</div>
       <button class="ctrl-btn" id="nextBtn">&#9197;</button>
-      <div class="volume-row">
-        <span class="ctrl-btn small" style="cursor:default;">&#128266;</span>
-        <input type="range" id="volumeSlider" min="0" max="100" value="70">
-      </div>
     </div>
   </div>
 </div>
@@ -427,7 +423,6 @@ const progressFill = document.getElementById('progressFill');
 const progressTrack = document.getElementById('progressTrack');
 const curTimeEl = document.getElementById('curTime');
 const durTimeEl = document.getElementById('durTime');
-const volumeSlider = document.getElementById('volumeSlider');
 const repeatBtn = document.getElementById('repeatBtn');
 
 audioEl.volume = 0.7;
@@ -683,10 +678,6 @@ function siguienteCancion(gestoDirecto = false) {
 repeatBtn.onclick = () => {
   repeatOn = !repeatOn;
   repeatBtn.classList.toggle('on', repeatOn);
-};
-
-volumeSlider.oninput = () => {
-  audioEl.volume = volumeSlider.value / 100;
 };
 
 progressTrack.onclick = (e) => {
