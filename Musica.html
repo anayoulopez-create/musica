@@ -71,7 +71,10 @@
   }
   .breadcrumb span.crumb {
     cursor: pointer;
-    padding: 6px 4px;
+    padding: 10px 16px;
+    background: var(--surface);
+    border-radius: 14px;
+    display: inline-block;
   }
   .breadcrumb span.crumb:hover { color: var(--text); }
   .breadcrumb span.sep { opacity: 0.5; }
@@ -140,38 +143,60 @@
       grid-template-columns: 1fr;
     }
     .folder-name {
-      font-size: 22px;
+      font-size: 26px;
     }
     .folder-sub {
-      font-size: 16px;
+      font-size: 18px;
     }
     .folder-icon {
-      width: 64px;
-      height: 64px;
+      width: 70px;
+      height: 70px;
     }
     .folder-icon svg {
-      width: 34px;
-      height: 34px;
+      width: 38px;
+      height: 38px;
     }
     .track-name {
-      font-size: 19px;
+      font-size: 22px;
     }
     .track-sub {
-      font-size: 15px;
+      font-size: 16px;
     }
     .track-icon {
-      width: 50px;
-      height: 50px;
-      font-size: 19px;
+      width: 54px;
+      height: 54px;
+      font-size: 21px;
     }
     h2.title {
-      font-size: 28px;
-    }
-    .breadcrumb {
       font-size: 30px;
     }
+    .breadcrumb {
+      font-size: 28px;
+    }
     .section-label {
-      font-size: 15px;
+      font-size: 16px;
+    }
+    .play-btn {
+      width: 84px; height: 84px;
+      font-size: 34px;
+    }
+    .ctrl-btn {
+      font-size: 44px;
+    }
+    .ctrl-btn.small {
+      font-size: 38px;
+    }
+    .progress-row span {
+      font-size: 16px;
+    }
+    .progress-track {
+      height: 10px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      width: 28px; height: 28px;
+    }
+    input[type=range]::-moz-range-thumb {
+      width: 28px; height: 28px;
     }
   }
 
@@ -463,9 +488,10 @@ function renderBreadcrumb() {
   const el = document.getElementById('breadcrumb');
   el.innerHTML = '';
   breadcrumbStack.forEach((item, i) => {
+    const esUltimo = i === breadcrumbStack.length - 1;
     const span = document.createElement('span');
     span.className = 'crumb';
-    span.textContent = item.name;
+    span.textContent = (!esUltimo ? '‹ ' : '') + item.name;
     span.onclick = () => {
       breadcrumbStack = breadcrumbStack.slice(0, i + 1);
       currentFolderId = item.id;
