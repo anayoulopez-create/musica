@@ -520,6 +520,14 @@ async function reproducirIndice(idx) {
     audioEl.src = currentObjectUrl;
     audioEl.play();
     nowPlaying.innerHTML = 'Sonando ahora · <b>' + escapeHtml(track.name) + '</b>';
+
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: track.name,
+        artist: 'Música',
+        album: 'Mi música',
+      });
+    }
   } catch (e) {
     nowPlaying.textContent = 'Error al reproducir: ' + e.message;
   }
@@ -583,6 +591,23 @@ progressTrack.onclick = (e) => {
   const pct = (e.clientX - rect.left) / rect.width;
   audioEl.currentTime = pct * audioEl.duration;
 };
+
+if ('mediaSession' in navigator) {
+  navigator.mediaSession.setActionHandler('play', () => audioEl.play());
+  navigator.mediaSession.setActionHandler('pause', () => audioEl.pause());
+  navigator.mediaSession.setActionHandler('previoustrack', () => {
+    if (currentTrackIndex > 0) reproducirIndice(currentTrackIndex - 1);
+  });
+  navigator.mediaSession.setActionHandler('nexttrack', siguienteCancion);
+}
+
+audioEl.addEventListener('play', () => {
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+});
+audioEl.addEventListener('pause', () => {
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+});
+
 </script>
 
 </body>
